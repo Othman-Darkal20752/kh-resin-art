@@ -237,3 +237,83 @@ main { min-height: 70vh; }
     height: 56px;
   }
 }
+
+@media (max-width: 768px) {
+  body {
+    font-size: 18px;
+  }
+
+  .container,
+  .section-container {
+    width: 92%;
+  }
+
+  h1 {
+    font-size: 42px !important;
+    line-height: 1.25;
+  }
+
+  h2 {
+    font-size: 32px !important;
+    line-height: 1.35;
+  }
+
+  h3 {
+    font-size: 24px !important;
+  }
+
+  p {
+    font-size: 18px !important;
+    line-height: 1.9;
+  }
+
+  button,
+  .btn,
+  .whatsapp-btn,
+  .details-btn {
+    font-size: 18px !important;
+    min-height: 56px;
+    padding: 14px 22px;
+  }
+
+  .nav-link {
+    font-size: 17px !important;
+  }
+
+  .brand-name {
+    font-size: 20px !important;
+  }
+
+  .product-card h3 {
+    font-size: 24px !important;
+  }
+
+  .product-card p {
+    font-size: 17px !important;
+  }
+
+  .product-card {
+    border-radius: 22px;
+  }
+
+  .product-image-box {
+    min-height: 300px;
+  }
+
+  .category-card {
+    min-height: 150px;
+  }
+
+  .category-card h3 {
+    font-size: 23px !important;
+  }
+
+  .custom-order h2 {
+    font-size: 34px !important;
+  }
+
+  .footer p,
+  .footer a {
+    font-size: 17px !important;
+  }
+}
