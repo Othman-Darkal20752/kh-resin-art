@@ -1,4 +1,4 @@
-export const PHONE_NUMBER = '+963993845460'; // غيّر الرقم هنا بصيغة دولية بدون +
+export const PHONE_NUMBER = '+963993845460';
 
 export function getWhatsAppLink(productName = '') {
   const message = productName

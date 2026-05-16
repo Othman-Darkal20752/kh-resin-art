@@ -6,18 +6,6 @@ npm install
 npm run dev
 ```
 
-## Change WhatsApp number
-Edit `src/components/WhatsAppButton.jsx`:
-```js
-const PHONE_NUMBER = '963000000000';
-```
-Use international format without `+`.
-
-## Replace images
-- Logo: replace `src/assets/logo.jpg`
-- Products: replace files inside `src/assets/products/`
-- Then update imports or product fields inside `src/data/products.js`
-
 ## Structure
 ```text
 src/
