@@ -1,0 +1,96 @@
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 80;
+  background: rgba(255, 253, 251, 0.92);
+  backdrop-filter: blur(18px);
+  border-bottom: 1px solid var(--line);
+}
+
+.nav-shell {
+  width: min(100% - 82px, 1440px);
+  margin-inline: auto;
+  min-height: 92px;
+  display: grid;
+  grid-template-columns: 220px 1fr 220px;
+  align-items: center;
+  gap: 20px;
+}
+
+.brand-text {
+  justify-self: end;
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: center;
+  gap: 10px;
+  font-size: 27px;
+  font-weight: 900;
+  letter-spacing: -0.5px;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.brand-logo {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  object-fit: contain;
+  background: transparent;
+  filter: drop-shadow(0 8px 16px rgba(247, 216, 227, 0.55));
+}
+
+.brand-name b { color: var(--gold); }
+
+.main-nav {
+  justify-self: center;
+  display: flex;
+  align-items: center;
+  gap: 34px;
+}
+
+.main-nav a {
+  font-size: 21px;
+  font-weight: 800;
+  color: var(--text);
+  padding: 25px 2px 20px;
+  border-bottom: 2px solid transparent;
+  transition: color .22s ease, border-color .22s ease, transform .22s ease;
+}
+
+.main-nav a:hover,
+.main-nav a.active {
+  color: var(--gold);
+  border-bottom-color: var(--gold);
+  transform: translateY(-2px);
+}
+
+.nav-whatsapp { justify-self: start; }
+
+@media (max-width: 900px) {
+  .nav-shell {
+    width: min(100% - 28px, 680px);
+    min-height: auto;
+    padding: 14px 0 12px;
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      "brand whatsapp"
+      "nav nav";
+    row-gap: 10px;
+  }
+
+  .brand-text { grid-area: brand; justify-self: start; font-size: 23px; gap: 8px; }
+  .brand-logo { width: 44px; height: 44px; }
+  .nav-whatsapp { grid-area: whatsapp; justify-self: end; min-height: 46px !important; padding-inline: 18px !important; font-size: 17px; width: auto !important; }
+  .main-nav { grid-area: nav; width: 100%; justify-content: space-between; gap: 0; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
+  .main-nav::-webkit-scrollbar { display: none; }
+  .main-nav a { flex: 0 0 auto; font-size: 17px; padding: 9px 10px 7px; border-radius: 999px; border: 1px solid transparent; }
+  .main-nav a:hover,
+  .main-nav a.active { background: var(--light-pink); border-color: var(--pink); transform: none; }
+}
+
+@media (max-width: 430px) {
+  .brand-text { font-size: 19px; }
+  .brand-logo { width: 38px; height: 38px; }
+  .nav-whatsapp { padding-inline: 14px !important; min-height: 42px !important; }
+  .main-nav a { font-size: 16px; padding-inline: 8px; }
+}
