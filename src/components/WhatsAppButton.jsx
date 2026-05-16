@@ -1,4 +1,5 @@
 export const PHONE_NUMBER = '963993845460';
+import React from 'react';
 
 export function getWhatsAppLink(productName = '') {
   const message = productName

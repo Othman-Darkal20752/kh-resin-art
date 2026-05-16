@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { products } from '../data/products';
 import { categories } from '../data/categories';
 import ProductCard from '../components/ProductCard';
+import React from 'react';
 
 export default function ProductsPage() {
   const [searchParams] = useSearchParams();

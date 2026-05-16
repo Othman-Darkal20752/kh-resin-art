@@ -1,6 +1,7 @@
 import { Link, useParams } from 'react-router-dom';
 import { products } from '../data/products';
 import WhatsAppButton from '../components/WhatsAppButton';
+import React from 'react';
 
 export default function ProductDetailsPage() {
   const { slug } = useParams();

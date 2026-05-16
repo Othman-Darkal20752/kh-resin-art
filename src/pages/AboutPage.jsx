@@ -1,4 +1,5 @@
 import logo from '../assets/logo-clean.png';
+import React from 'react';
 
 const values = [
   { title: 'مصنوعة بحب', text: 'كل قطعة تأخذ وقتها لتقدم عملاً فنياً يدوياً متقناً.', icon: '♡' },

@@ -1,5 +1,5 @@
 import WhatsAppButton, { PHONE_NUMBER } from '../components/WhatsAppButton';
-
+import React from 'react';
 export default function ContactPage() {
   const formattedPhone = `+${PHONE_NUMBER}`;
 

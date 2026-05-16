@@ -3,6 +3,7 @@ import logo from '../assets/logo-clean.png';
 import { products } from '../data/products';
 import ProductCard from '../components/ProductCard';
 import WhatsAppButton from '../components/WhatsAppButton';
+import React from 'react';
 
 const categories = [
   { name: 'ساعات ريزن', icon: '✧' },

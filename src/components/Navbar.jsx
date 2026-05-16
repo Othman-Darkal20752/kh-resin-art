@@ -1,6 +1,7 @@
 import { NavLink } from 'react-router-dom';
 import WhatsAppButton from './WhatsAppButton';
 import logo from '../assets/logo-clean.png';
+import React from 'react';
 
 const links = [
   { to: '/', label: 'الرئيسية' },
