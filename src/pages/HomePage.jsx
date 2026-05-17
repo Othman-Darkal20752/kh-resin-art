@@ -245,7 +245,7 @@ export default function HomePage() {
       <section className="custom-order-section">
         <div className="custom-order-content">
           <span className="eyebrow custom-eyebrow">تصميم حسب الطلب</span>
-          <h2>اطلبي قطعة باسمك، لونك، ومناسبتك</h2>
+          <h2>اطلبي قطعة باسمك، لونك المفضل، ومناسبتك</h2>
           <p>
             أرسلي لنا الفكرة أو صورة مرجعية، وسنساعدك باختيار الألوان والتفاصيل المناسبة قبل تنفيذ الطلب.
           </p>
