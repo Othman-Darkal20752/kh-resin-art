@@ -1,9 +1,11 @@
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import logo from '../assets/logo-clean.png';
-import { products } from '../data/products';
 import ProductCard from '../components/ProductCard';
 import WhatsAppButton from '../components/WhatsAppButton';
-import React from 'react';
+
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'https://kh-resin-art-backend.onrender.com/api').replace(/\/$/, '');
+const BACKEND_BASE_URL = API_BASE_URL.replace(/\/api$/, '');
 
 const categories = [
   { name: 'ساعات ريزن', icon: '✧' },
@@ -12,9 +14,87 @@ const categories = [
   { name: 'قطع ديكور', icon: '✧' },
 ];
 
+function normalizeImageUrl(url) {
+  if (!url) return '';
+  if (url.startsWith('http://') || url.startsWith('https://')) return url;
+  return `${BACKEND_BASE_URL}${url.startsWith('/') ? url : `/${url}`}`;
+}
+
+function normalizeProduct(product) {
+  const categoryValue =
+    product.category_name ||
+    product.category?.name ||
+    product.category_title ||
+    product.category ||
+    'بدون تصنيف';
+
+  return {
+    ...product,
+    id: product.id,
+    slug: product.slug || String(product.id),
+    name: product.name || product.title || 'منتج بدون اسم',
+    category: categoryValue,
+    shortDescription:
+      product.short_description ||
+      product.shortDescription ||
+      product.description ||
+      '',
+    description:
+      product.description ||
+      product.short_description ||
+      product.shortDescription ||
+      '',
+    image: normalizeImageUrl(product.image_url || product.image || product.photo),
+    materials: product.materials || 'غير محدد',
+    colors: product.colors || 'غير محدد',
+    customizable: product.customizable ?? product.is_customizable ?? false,
+    isNew: product.is_new ?? product.isNew ?? false,
+    isFeatured: product.is_featured ?? product.isFeatured ?? false,
+  };
+}
+
+async function fetchProducts() {
+  const response = await fetch(`${API_BASE_URL}/products/`);
+
+  if (!response.ok) {
+    throw new Error('فشل تحميل المنتجات من السيرفر');
+  }
+
+  const data = await response.json();
+  const items = Array.isArray(data) ? data : data.results || [];
+  return items.map(normalizeProduct);
+}
+
 export default function HomePage() {
-  const featured = products.filter((p) => p.isFeatured).slice(0, 3);
-  const newest = products.filter((p) => p.isNew).slice(0, 3);
+  const [apiProducts, setApiProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState('');
+
+  useEffect(() => {
+    let isMounted = true;
+
+    fetchProducts()
+      .then((items) => {
+        if (!isMounted) return;
+        setApiProducts(items);
+        setErrorMessage('');
+      })
+      .catch((error) => {
+        if (!isMounted) return;
+        setErrorMessage(error.message || 'حدث خطأ أثناء تحميل المنتجات');
+      })
+      .finally(() => {
+        if (!isMounted) return;
+        setLoading(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const featured = apiProducts.filter((p) => p.isFeatured).slice(0, 3);
+  const newest = apiProducts.filter((p) => p.isNew).slice(0, 3);
 
   return (
     <>
@@ -62,6 +142,13 @@ export default function HomePage() {
           </div>
           <Link to="/products" className="view-all">عرض الكل ←</Link>
         </div>
+
+        {loading && <p className="empty-state">جاري تحميل المنتجات...</p>}
+        {!loading && errorMessage && <p className="empty-state">{errorMessage}</p>}
+        {!loading && !errorMessage && featured.length === 0 && (
+          <p className="empty-state">لا توجد منتجات مميزة حالياً. أضيفي منتجات من لوحة التحكم.</p>
+        )}
+
         <div className="products-grid home-grid">
           {featured.map((product) => <ProductCard key={product.id} product={product} />)}
         </div>
@@ -75,6 +162,12 @@ export default function HomePage() {
           </div>
           <Link to="/products" className="view-all">عرض المزيد ←</Link>
         </div>
+
+        {loading && <p className="empty-state">جاري تحميل المنتجات...</p>}
+        {!loading && !errorMessage && newest.length === 0 && (
+          <p className="empty-state">لا توجد منتجات جديدة حالياً.</p>
+        )}
+
         <div className="products-grid home-grid">
           {newest.map((product) => <ProductCard key={product.id} product={product} />)}
         </div>
