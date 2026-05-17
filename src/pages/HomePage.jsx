@@ -8,13 +8,6 @@ const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'https://kh-resin-art
 const BACKEND_BASE_URL = API_BASE_URL.replace(/\/api$/, '');
 const FALLBACK_IMAGE = '/images/product-placeholder.svg';
 
-const categories = [
-  { name: 'ساعات ريزن', icon: '✧' },
-  { name: 'ميداليات', icon: '✧' },
-  { name: 'هدايا مخصصة', icon: '✧' },
-  { name: 'قطع ديكور', icon: '✧' },
-];
-
 function normalizeImageUrl(url) {
   if (typeof url !== 'string') return FALLBACK_IMAGE;
 
@@ -36,12 +29,22 @@ function normalizeImageUrl(url) {
   return `${BACKEND_BASE_URL}${value.startsWith('/') ? value : `/${value}`}`;
 }
 
+function normalizeCategory(category) {
+  return {
+    id: category.id,
+    name: category.name || 'تصنيف بدون اسم',
+    slug: category.slug || String(category.id),
+    description: category.description || '',
+    order: category.order ?? 0,
+    icon: '✧',
+  };
+}
+
 function normalizeProduct(product) {
   const categoryValue =
     product.category_name ||
     product.category?.name ||
     product.category_title ||
-    product.category ||
     'بدون تصنيف';
 
   return {
@@ -50,6 +53,10 @@ function normalizeProduct(product) {
     slug: product.slug || String(product.id),
     name: product.name || product.title || 'منتج بدون اسم',
     category: categoryValue,
+    categorySlug:
+      product.category_slug ||
+      product.category?.slug ||
+      '',
     shortDescription:
       product.short_description ||
       product.shortDescription ||
@@ -64,8 +71,8 @@ function normalizeProduct(product) {
     materials: product.materials || 'غير محدد',
     colors: product.colors || 'غير محدد',
     customizable: product.customizable ?? product.is_customizable ?? false,
-    isNew: product.is_new ?? product.isNew ?? false,
     isFeatured: product.is_featured ?? product.isFeatured ?? false,
+    createdAt: product.created_at || product.createdAt || null,
   };
 }
 
@@ -81,23 +88,46 @@ async function fetchProducts() {
   return items.map(normalizeProduct);
 }
 
+async function fetchCategories() {
+  const response = await fetch(`${API_BASE_URL}/categories/`);
+
+  if (!response.ok) {
+    throw new Error('فشل تحميل التصنيفات من السيرفر');
+  }
+
+  const data = await response.json();
+  const items = Array.isArray(data) ? data : data.results || [];
+  return items.map(normalizeCategory);
+}
+
+function sortByNewest(products) {
+  return [...products].sort((a, b) => {
+    const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+    const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+
+    return dateB - dateA;
+  });
+}
+
 export default function HomePage() {
   const [apiProducts, setApiProducts] = useState([]);
+  const [apiCategories, setApiCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
     let isMounted = true;
 
-    fetchProducts()
-      .then((items) => {
+    Promise.all([fetchProducts(), fetchCategories()])
+      .then(([products, categories]) => {
         if (!isMounted) return;
-        setApiProducts(items);
+        setApiProducts(products);
+        setApiCategories(categories);
         setErrorMessage('');
       })
       .catch((error) => {
         if (!isMounted) return;
-        setErrorMessage(error.message || 'حدث خطأ أثناء تحميل المنتجات');
+        setErrorMessage(error.message || 'حدث خطأ أثناء تحميل بيانات الصفحة');
       })
       .finally(() => {
         if (!isMounted) return;
@@ -109,8 +139,8 @@ export default function HomePage() {
     };
   }, []);
 
-  const featured = apiProducts.filter((p) => p.isFeatured).slice(0, 3);
-  const newest = apiProducts.filter((p) => p.isNew).slice(0, 3);
+  const featured = apiProducts.filter((product) => product.isFeatured).slice(0, 3);
+  const newest = sortByNewest(apiProducts).slice(0, 3);
 
   return (
     <>
@@ -140,9 +170,20 @@ export default function HomePage() {
           <h2>تصنيفات المنتجات</h2>
           <span />
         </div>
+
+        {loading && <p className="empty-state">جاري تحميل التصنيفات...</p>}
+
+        {!loading && !errorMessage && apiCategories.length === 0 && (
+          <p className="empty-state">لا توجد تصنيفات ظاهرة حالياً.</p>
+        )}
+
         <div className="category-grid">
-          {categories.map((category) => (
-            <Link className="category-card" key={category.name} to={`/products?category=${encodeURIComponent(category.name)}`}>
+          {apiCategories.map((category) => (
+            <Link
+              className="category-card"
+              key={category.id || category.slug}
+              to={`/products?category=${encodeURIComponent(category.slug)}`}
+            >
               <span>{category.icon}</span>
               <strong>{category.name}</strong>
             </Link>
@@ -174,14 +215,14 @@ export default function HomePage() {
         <div className="section-heading split">
           <div>
             <h2>أحدث المنتجات</h2>
-            <p>تصاميم جديدة مصنوعة بعناية</p>
+            <p>آخر التصاميم المضافة إلى المعرض</p>
           </div>
           <Link to="/products" className="view-all">عرض المزيد ←</Link>
         </div>
 
         {loading && <p className="empty-state">جاري تحميل المنتجات...</p>}
         {!loading && !errorMessage && newest.length === 0 && (
-          <p className="empty-state">لا توجد منتجات جديدة حالياً.</p>
+          <p className="empty-state">لا توجد منتجات حالياً.</p>
         )}
 
         <div className="products-grid home-grid">

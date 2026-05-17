@@ -1,11 +1,16 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { categories } from '../data/categories';
 import ProductCard from '../components/ProductCard';
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'https://kh-resin-art-backend.onrender.com/api').replace(/\/$/, '');
 const BACKEND_BASE_URL = API_BASE_URL.replace(/\/api$/, '');
 const FALLBACK_IMAGE = '/images/product-placeholder.svg';
+
+const ALL_CATEGORY = {
+  id: 'all',
+  name: 'الكل',
+  slug: 'all',
+};
 
 function normalizeImageUrl(url) {
   if (typeof url !== 'string') return FALLBACK_IMAGE;
@@ -28,12 +33,21 @@ function normalizeImageUrl(url) {
   return `${BACKEND_BASE_URL}${value.startsWith('/') ? value : `/${value}`}`;
 }
 
+function normalizeCategory(category) {
+  return {
+    id: category.id,
+    name: category.name || 'تصنيف بدون اسم',
+    slug: category.slug || String(category.id),
+    description: category.description || '',
+    order: category.order ?? 0,
+  };
+}
+
 function normalizeProduct(product) {
   const categoryValue =
     product.category_name ||
     product.category?.name ||
     product.category_title ||
-    product.category ||
     'بدون تصنيف';
 
   return {
@@ -42,6 +56,10 @@ function normalizeProduct(product) {
     slug: product.slug || String(product.id),
     name: product.name || product.title || 'منتج بدون اسم',
     category: categoryValue,
+    categorySlug:
+      product.category_slug ||
+      product.category?.slug ||
+      '',
     shortDescription:
       product.short_description ||
       product.shortDescription ||
@@ -56,8 +74,8 @@ function normalizeProduct(product) {
     materials: product.materials || 'غير محدد',
     colors: product.colors || 'غير محدد',
     customizable: product.customizable ?? product.is_customizable ?? false,
-    isNew: product.is_new ?? product.isNew ?? false,
     isFeatured: product.is_featured ?? product.isFeatured ?? false,
+    createdAt: product.created_at || product.createdAt || null,
   };
 }
 
@@ -73,22 +91,41 @@ async function fetchProducts() {
   return items.map(normalizeProduct);
 }
 
+async function fetchCategories() {
+  const response = await fetch(`${API_BASE_URL}/categories/`);
+
+  if (!response.ok) {
+    throw new Error('فشل تحميل التصنيفات من السيرفر');
+  }
+
+  const data = await response.json();
+  const items = Array.isArray(data) ? data : data.results || [];
+  return items.map(normalizeCategory);
+}
+
 export default function ProductsPage() {
   const [searchParams] = useSearchParams();
-  const initialCategory = searchParams.get('category') || 'الكل';
-  const [category, setCategory] = useState(categories.includes(initialCategory) ? initialCategory : 'الكل');
+  const initialCategorySlug = searchParams.get('category') || ALL_CATEGORY.slug;
+
+  const [selectedCategorySlug, setSelectedCategorySlug] = useState(initialCategorySlug);
   const [query, setQuery] = useState('');
   const [apiProducts, setApiProducts] = useState([]);
+  const [apiCategories, setApiCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
+    setSelectedCategorySlug(searchParams.get('category') || ALL_CATEGORY.slug);
+  }, [searchParams]);
+
+  useEffect(() => {
     let isMounted = true;
 
-    fetchProducts()
-      .then((items) => {
+    Promise.all([fetchProducts(), fetchCategories()])
+      .then(([products, categories]) => {
         if (!isMounted) return;
-        setApiProducts(items);
+        setApiProducts(products);
+        setApiCategories(categories);
         setErrorMessage('');
       })
       .catch((error) => {
@@ -105,10 +142,18 @@ export default function ProductsPage() {
     };
   }, []);
 
+  const categories = useMemo(() => {
+    return [ALL_CATEGORY, ...apiCategories];
+  }, [apiCategories]);
+
   const filteredProducts = useMemo(() => {
     const value = query.trim();
+
     return apiProducts.filter((product) => {
-      const matchesCategory = category === 'الكل' || product.category === category;
+      const matchesCategory =
+        selectedCategorySlug === ALL_CATEGORY.slug ||
+        product.categorySlug === selectedCategorySlug;
+
       const matchesSearch =
         !value ||
         product.name.includes(value) ||
@@ -117,7 +162,7 @@ export default function ProductsPage() {
 
       return matchesCategory && matchesSearch;
     });
-  }, [apiProducts, category, query]);
+  }, [apiProducts, selectedCategorySlug, query]);
 
   return (
     <section className="products-page page-section">
@@ -143,12 +188,12 @@ export default function ProductsPage() {
             <div>
               {categories.map((item) => (
                 <button
-                  key={item}
-                  className={category === item ? 'active' : ''}
-                  onClick={() => setCategory(item)}
+                  key={item.slug}
+                  className={selectedCategorySlug === item.slug ? 'active' : ''}
+                  onClick={() => setSelectedCategorySlug(item.slug)}
                   type="button"
                 >
-                  {item}
+                  {item.name}
                 </button>
               ))}
             </div>
@@ -162,15 +207,16 @@ export default function ProductsPage() {
               onChange={(event) => setQuery(event.target.value)}
               placeholder="ابحثي عن منتج..."
             />
+
             <div className="mobile-cats">
               {categories.map((item) => (
                 <button
-                  key={item}
-                  className={category === item ? 'active' : ''}
-                  onClick={() => setCategory(item)}
+                  key={item.slug}
+                  className={selectedCategorySlug === item.slug ? 'active' : ''}
+                  onClick={() => setSelectedCategorySlug(item.slug)}
                   type="button"
                 >
-                  {item}
+                  {item.name}
                 </button>
               ))}
             </div>
@@ -184,7 +230,10 @@ export default function ProductsPage() {
               <div className="products-grid catalog-grid">
                 {filteredProducts.map((product) => <ProductCard key={product.id} product={product} />)}
               </div>
-              {!filteredProducts.length && <p className="empty-state">لا توجد منتجات مطابقة أو لم يتم إضافة منتجات بعد.</p>}
+
+              {!filteredProducts.length && (
+                <p className="empty-state">لا توجد منتجات مطابقة أو لم يتم إضافة منتجات بعد.</p>
+              )}
             </>
           )}
         </div>
