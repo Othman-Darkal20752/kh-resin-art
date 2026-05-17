@@ -64,9 +64,11 @@ function normalizeProduct(product) {
       'لا توجد تفاصيل إضافية لهذا المنتج حاليًا. يمكنكم التواصل معنا عبر واتساب لمعرفة المقاسات، الألوان، وخيارات التخصيص.'
     ),
     image: normalizeImageUrl(product.image_url || product.image || product.photo),
-    materials: normalizeText(product.materials, 'ريزن / كونكريت حسب تصميم القطعة'),
-    colors: normalizeText(product.colors, 'حسب الصورة أو حسب الطلب'),
-    customizable: product.customizable ?? product.is_customizable ?? false,
+    colors: normalizeText(product.colors_note || product.colors, 'حسب الصورة أو حسب الطلب'),
+    customization: normalizeText(
+      product.customization_note || product.customization || product.customizationNote,
+      'يمكن الاستفسار عن إمكانية التخصيص'
+    ),
     isNew: product.is_new ?? product.isNew ?? false,
     isFeatured: product.is_featured ?? product.isFeatured ?? false,
   };
@@ -187,18 +189,13 @@ export default function ProductDetailsPage() {
             </div>
 
             <div>
-              <strong>المواد</strong>
-              <span>{product.materials}</span>
-            </div>
-
-            <div>
               <strong>الألوان</strong>
               <span>{product.colors}</span>
             </div>
 
             <div>
               <strong>التخصيص</strong>
-              <span>{product.customizable ? 'متوفر حسب الطلب' : 'يمكن الاستفسار عن إمكانية التخصيص'}</span>
+              <span>{product.customization}</span>
             </div>
           </div>
 
