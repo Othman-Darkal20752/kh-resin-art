@@ -1,7 +1,7 @@
+import React from 'react';
 import { NavLink } from 'react-router-dom';
 import WhatsAppButton from './WhatsAppButton';
 import logo from '../assets/logo-clean.png';
-import React from 'react';
 
 const links = [
   { to: '/', label: 'الرئيسية' },
@@ -14,12 +14,15 @@ export default function Navbar() {
   return (
     <header className="site-header">
       <div className="nav-shell">
-        <NavLink to="/" className="brand-text" aria-label="Kh Resin Art">
+        <NavLink to="/" className="brand-text" aria-label="الانتقال إلى الصفحة الرئيسية">
           <img className="brand-logo" src={logo} alt="" aria-hidden="true" />
-          <span className="brand-name"><b>Kh</b> Resin Art</span>
+          <span className="brand-copy">
+            <span className="brand-name"><b>Kh</b> Resin Art</span>
+            <span className="brand-subtitle">Handmade Resin</span>
+          </span>
         </NavLink>
 
-        <nav className="main-nav" aria-label="روابط الموقع">
+        <nav className="main-nav" aria-label="روابط الموقع الأساسية">
           {links.map((link) => (
             <NavLink key={link.to} to={link.to} end={link.to === '/'}>
               {link.label}

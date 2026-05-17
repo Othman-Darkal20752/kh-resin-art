@@ -317,3 +317,183 @@ main { min-height: 70vh; }
     font-size: 17px !important;
   }
 }
+
+/* Final touches for Kh Resin Art pages
+   Add this at the end of your main CSS file, for example src/styles/global.css or src/styles/home.css. */
+
+.brand-copy {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+
+.brand-subtitle {
+  margin-top: 2px;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  color: rgba(90, 62, 79, 0.65);
+  text-transform: uppercase;
+}
+
+.custom-order-section {
+  margin: 56px auto 72px;
+  padding: 0 20px;
+}
+
+.custom-order-content {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 42px 36px;
+  border-radius: 28px;
+  text-align: center;
+  background:
+    radial-gradient(circle at top right, rgba(255, 240, 247, 0.95), transparent 34%),
+    linear-gradient(135deg, #f9d9e8 0%, #f3b9cf 45%, #d997b8 100%);
+  color: #4e2035;
+  box-shadow: 0 20px 50px rgba(97, 48, 74, 0.18);
+}
+
+.custom-eyebrow {
+  display: inline-flex;
+  margin-bottom: 12px;
+  color: #7c3150;
+  background: rgba(255, 255, 255, 0.42);
+  border-radius: 999px;
+  padding: 7px 14px;
+}
+
+.custom-order-content h2 {
+  margin: 0 0 12px;
+  font-size: clamp(1.7rem, 4vw, 2.4rem);
+}
+
+.custom-order-content p {
+  max-width: 680px;
+  margin: 0 auto 22px;
+  font-size: 1rem;
+  line-height: 1.9;
+}
+
+.custom-order-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  max-width: 820px;
+  margin: 0 auto 26px;
+  padding: 0;
+  list-style: none;
+}
+
+.custom-order-list li {
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.44);
+  font-weight: 700;
+  line-height: 1.6;
+}
+
+.custom-order-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.custom-order-link {
+  color: #4e2035;
+  font-weight: 800;
+  text-decoration: none;
+  border-bottom: 1px solid currentColor;
+}
+
+.contact-note {
+  margin-top: 24px;
+  padding: 18px;
+  border-radius: 20px;
+  background: rgba(255, 247, 251, 0.86);
+  text-align: center;
+}
+
+.contact-note h3 {
+  margin: 0 0 8px;
+}
+
+.contact-note p {
+  margin: 0;
+  line-height: 1.8;
+}
+
+.footer-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 18px 0;
+}
+
+.footer-cta span {
+  font-weight: 700;
+}
+
+@media (max-width: 820px) {
+  .nav-shell {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .main-nav {
+    order: 3;
+    width: 100%;
+    justify-content: center;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+
+  .brand-subtitle {
+    display: none;
+  }
+
+  .custom-order-content {
+    padding: 32px 22px;
+    border-radius: 24px;
+  }
+
+  .custom-order-list {
+    grid-template-columns: 1fr;
+  }
+
+  .contact-info-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 560px) {
+  .hero-actions,
+  .custom-order-actions {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .hero-actions a,
+  .hero-actions button,
+  .custom-order-actions a,
+  .custom-order-actions button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .category-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .products-grid.home-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .footer-links {
+    flex-direction: column;
+    gap: 10px;
+  }
+}
