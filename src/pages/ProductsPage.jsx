@@ -5,11 +5,27 @@ import ProductCard from '../components/ProductCard';
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'https://kh-resin-art-backend.onrender.com/api').replace(/\/$/, '');
 const BACKEND_BASE_URL = API_BASE_URL.replace(/\/api$/, '');
+const FALLBACK_IMAGE = '/images/product-placeholder.svg';
 
 function normalizeImageUrl(url) {
-  if (!url) return '';
-  if (url.startsWith('http://') || url.startsWith('https://')) return url;
-  return `${BACKEND_BASE_URL}${url.startsWith('/') ? url : `/${url}`}`;
+  if (typeof url !== 'string') return FALLBACK_IMAGE;
+
+  const value = url.trim();
+  const invalidValues = ['', 'null', 'undefined', 'none'];
+
+  if (invalidValues.includes(value.toLowerCase())) {
+    return FALLBACK_IMAGE;
+  }
+
+  if (value.startsWith('/images/')) {
+    return value;
+  }
+
+  if (value.startsWith('http://') || value.startsWith('https://')) {
+    return value;
+  }
+
+  return `${BACKEND_BASE_URL}${value.startsWith('/') ? value : `/${value}`}`;
 }
 
 function normalizeProduct(product) {

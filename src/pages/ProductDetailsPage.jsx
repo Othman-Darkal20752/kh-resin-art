@@ -4,11 +4,35 @@ import WhatsAppButton from '../components/WhatsAppButton';
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'https://kh-resin-art-backend.onrender.com/api').replace(/\/$/, '');
 const BACKEND_BASE_URL = API_BASE_URL.replace(/\/api$/, '');
+const FALLBACK_IMAGE = '/images/product-placeholder.svg';
 
 function normalizeImageUrl(url) {
-  if (!url) return '';
-  if (url.startsWith('http://') || url.startsWith('https://')) return url;
-  return `${BACKEND_BASE_URL}${url.startsWith('/') ? url : `/${url}`}`;
+  if (typeof url !== 'string') return FALLBACK_IMAGE;
+
+  const value = url.trim();
+  const invalidValues = ['', 'null', 'undefined', 'none'];
+
+  if (invalidValues.includes(value.toLowerCase())) {
+    return FALLBACK_IMAGE;
+  }
+
+  if (value.startsWith('/images/')) {
+    return value;
+  }
+
+  if (value.startsWith('http://') || value.startsWith('https://')) {
+    return value;
+  }
+
+  return `${BACKEND_BASE_URL}${value.startsWith('/') ? value : `/${value}`}`;
+}
+
+function normalizeText(value, fallback = 'غير محدد') {
+  if (typeof value !== 'string') return fallback;
+
+  const cleaned = value.trim();
+
+  return cleaned ? cleaned : fallback;
 }
 
 function normalizeProduct(product) {
@@ -19,25 +43,29 @@ function normalizeProduct(product) {
     product.category ||
     'بدون تصنيف';
 
+  const description =
+    product.description ||
+    product.short_description ||
+    product.shortDescription ||
+    '';
+
   return {
     ...product,
     id: product.id,
     slug: product.slug || String(product.id),
-    name: product.name || product.title || 'منتج بدون اسم',
-    category: categoryValue,
-    shortDescription:
-      product.short_description ||
-      product.shortDescription ||
-      product.description ||
-      '',
-    description:
-      product.description ||
-      product.short_description ||
-      product.shortDescription ||
-      '',
+    name: normalizeText(product.name || product.title, 'منتج بدون اسم'),
+    category: normalizeText(categoryValue, 'بدون تصنيف'),
+    shortDescription: normalizeText(
+      product.short_description || product.shortDescription || description,
+      ''
+    ),
+    description: normalizeText(
+      description,
+      'لا توجد تفاصيل إضافية لهذا المنتج حاليًا. يمكنكم التواصل معنا عبر واتساب لمعرفة المقاسات، الألوان، وخيارات التخصيص.'
+    ),
     image: normalizeImageUrl(product.image_url || product.image || product.photo),
-    materials: product.materials || 'غير محدد',
-    colors: product.colors || 'غير محدد',
+    materials: normalizeText(product.materials, 'ريزن / كونكريت حسب تصميم القطعة'),
+    colors: normalizeText(product.colors, 'حسب الصورة أو حسب الطلب'),
     customizable: product.customizable ?? product.is_customizable ?? false,
     isNew: product.is_new ?? product.isNew ?? false,
     isFeatured: product.is_featured ?? product.isFeatured ?? false,
@@ -60,13 +88,12 @@ async function fetchProductBySlug(slug) {
 
   const data = await listResponse.json();
   const items = Array.isArray(data) ? data : data.results || [];
-  const foundProduct = items.map(normalizeProduct).find((item) => item.slug === slug || String(item.id) === String(slug));
 
-  if (!foundProduct) {
-    return null;
-  }
+  const foundProduct = items
+    .map(normalizeProduct)
+    .find((item) => item.slug === slug || String(item.id) === String(slug));
 
-  return foundProduct;
+  return foundProduct || null;
 }
 
 export default function ProductDetailsPage() {
@@ -77,6 +104,8 @@ export default function ProductDetailsPage() {
 
   useEffect(() => {
     let isMounted = true;
+
+    setLoading(true);
 
     fetchProductBySlug(slug)
       .then((item) => {
@@ -124,29 +153,67 @@ export default function ProductDetailsPage() {
     );
   }
 
+  const productUrl = `${window.location.origin}/products/${product.slug}`;
+
   return (
     <section className="details-page page-section">
       <div className="details-card">
         <div className="details-image">
           <span>{product.category}</span>
-          <img src={product.image} alt={product.name} />
+
+          <img
+            src={product.image}
+            alt={product.name}
+            className={product.image === FALLBACK_IMAGE ? 'is-fallback' : ''}
+            onError={(e) => {
+              e.currentTarget.onerror = null;
+              e.currentTarget.src = FALLBACK_IMAGE;
+              e.currentTarget.classList.add('is-fallback');
+            }}
+          />
         </div>
 
         <div className="details-content">
           <p className="eyebrow">تفاصيل المنتج</p>
+
           <h1>{product.name}</h1>
+
           <p className="details-description">{product.description}</p>
 
           <div className="details-list">
-            <div><strong>التصنيف</strong><span>{product.category}</span></div>
-            <div><strong>المواد</strong><span>{product.materials}</span></div>
-            <div><strong>الألوان</strong><span>{product.colors}</span></div>
-            <div><strong>التخصيص</strong><span>{product.customizable ? 'متوفر حسب الطلب' : 'غير متوفر'}</span></div>
+            <div>
+              <strong>التصنيف</strong>
+              <span>{product.category}</span>
+            </div>
+
+            <div>
+              <strong>المواد</strong>
+              <span>{product.materials}</span>
+            </div>
+
+            <div>
+              <strong>الألوان</strong>
+              <span>{product.colors}</span>
+            </div>
+
+            <div>
+              <strong>التخصيص</strong>
+              <span>{product.customizable ? 'متوفر حسب الطلب' : 'يمكن الاستفسار عن إمكانية التخصيص'}</span>
+            </div>
           </div>
 
           <div className="details-actions">
-            <WhatsAppButton productName={product.name}>استفسار عن هذا المنتج</WhatsAppButton>
-            <Link className="btn details-btn" to="/products">العودة للمنتجات</Link>
+            <WhatsAppButton
+              productName={product.name}
+              productUrl={productUrl}
+              className="details-whatsapp-btn"
+            >
+              استفسار عن هذا المنتج
+            </WhatsAppButton>
+
+            <Link className="btn details-btn" to="/products">
+              العودة للمنتجات
+            </Link>
           </div>
         </div>
       </div>

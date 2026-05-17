@@ -1,30 +1,43 @@
-export const PHONE_NUMBER = '963993845460';
 import React from 'react';
 
-export function getWhatsAppLink(productName = '') {
-  const message = productName
-    ? `مرحباً، أريد الاستفسار عن المنتج: ${productName}`
-    : 'مرحباً، أريد الاستفسار عن منتجات Kh Resin Art';
+export const PHONE_NUMBER = '963993845460';
+
+export function getWhatsAppLink(productName = '', productUrl = '') {
+  const hasProduct = productName && productName.trim().length > 0;
+
+  const message = hasProduct
+    ? `مرحباً، أود الاستفسار عن هذا المنتج:
+
+اسم المنتج: ${productName}
+${productUrl ? `رابط المنتج: ${productUrl}` : ''}
+
+هل يمكنكم إرسال التفاصيل المتوفرة عنه؟`
+    : `مرحباً، أود الاستفسار عن منتجات Kh Resin Art.
+
+هل يمكنكم مساعدتي؟`;
 
   return `https://wa.me/${PHONE_NUMBER}?text=${encodeURIComponent(message)}`;
 }
 
 export default function WhatsAppButton({
-  productName,
-  children = 'استفسار عبر واتساب',
+  productName = '',
+  productUrl = '',
+  children = 'تواصل عبر واتساب',
   className = '',
-  variant = 'green',
+  variant = '',
 }) {
+  const classes = ['btn', 'whatsapp-btn', variant ? `whatsapp-${variant}` : '', className]
+    .filter(Boolean)
+    .join(' ');
+
   return (
     <a
-      className={`btn whatsapp-btn ${variant === 'dark' ? 'btn-dark' : ''} ${className}`}
-      href={getWhatsAppLink(productName)}
+      className={classes}
+      href={getWhatsAppLink(productName, productUrl)}
       target="_blank"
       rel="noreferrer"
-      aria-label={typeof children === 'string' ? children : 'تواصل عبر واتساب'}
     >
-      <span className="wa-icon">☏</span>
-      <span>{children}</span>
+      {children}
     </a>
   );
 }
