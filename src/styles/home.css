@@ -163,15 +163,86 @@
   .hero-actions { flex-direction: column; }
   .hero-visual { width: 88%; max-width: 360px; padding: 22px; border-width: 8px; }
   .categories-section { padding-top: 52px; }
-  .category-grid { gap: 16px; margin-top: 32px; }
+  .category-grid {
+    display: flex;
+    gap: 14px;
+    margin-top: 32px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 4px 2px 14px;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+
+  .category-grid::-webkit-scrollbar {
+    display: none;
+  }
+
+  .category-card {
+    flex: 0 0 74%;
+    min-width: 220px;
+    scroll-snap-align: start;
+  }
   .custom-order-section { margin-bottom: 56px; padding: 44px 20px; }
 }
 
 @media (max-width: 560px) {
-  .category-grid { grid-template-columns: 1fr; }
-  .category-card { min-height: 138px; gap: 14px; }
+  .category-grid {
+    display: flex;
+    grid-template-columns: none;
+  }
+
+  .category-card {
+    flex-basis: 82%;
+    min-height: 138px;
+    gap: 14px;
+  }
   .category-card span { width: 58px; height: 58px; font-size: 30px; }
   .hero-copy h1 { font-size: 40px; }
   .hero-copy h2 { font-size: 24px; }
   .hero-visual { width: 100%; border-radius: 25px; }
+}
+
+
+/* ===== FINAL FIX: mobile category horizontal scroll ===== */
+@media (max-width: 900px) {
+  .categories-section .category-grid {
+    display: flex !important;
+    grid-template-columns: none !important;
+    flex-wrap: nowrap !important;
+    gap: 14px !important;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    padding: 6px 4px 16px !important;
+    margin-top: 32px !important;
+    scroll-snap-type: x proximity;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .categories-section .category-grid::-webkit-scrollbar {
+    display: none;
+  }
+
+  .categories-section .category-card {
+    flex: 0 0 76% !important;
+    min-width: 230px !important;
+    max-width: 330px !important;
+    min-height: 138px !important;
+    scroll-snap-align: start;
+  }
+}
+
+@media (max-width: 560px) {
+  .categories-section .category-grid {
+    display: flex !important;
+    grid-template-columns: none !important;
+  }
+
+  .categories-section .category-card {
+    flex: 0 0 78% !important;
+    min-width: 220px !important;
+  }
 }

@@ -74,6 +74,31 @@ function normalizeProduct(product) {
   };
 }
 
+async function fetchAllPages(url) {
+  const items = [];
+  let nextUrl = url;
+
+  while (nextUrl) {
+    const response = await fetch(nextUrl);
+
+    if (!response.ok) {
+      throw new Error('فشل تحميل البيانات من السيرفر');
+    }
+
+    const data = await response.json();
+
+    if (Array.isArray(data)) {
+      items.push(...data);
+      nextUrl = null;
+    } else {
+      items.push(...(data.results || []));
+      nextUrl = data.next;
+    }
+  }
+
+  return items;
+}
+
 async function fetchProductBySlug(slug) {
   const detailResponse = await fetch(`${API_BASE_URL}/products/${slug}/`);
 
@@ -82,14 +107,7 @@ async function fetchProductBySlug(slug) {
     return normalizeProduct(product);
   }
 
-  const listResponse = await fetch(`${API_BASE_URL}/products/`);
-
-  if (!listResponse.ok) {
-    throw new Error('فشل تحميل تفاصيل المنتج');
-  }
-
-  const data = await listResponse.json();
-  const items = Array.isArray(data) ? data : data.results || [];
+  const items = await fetchAllPages(`${API_BASE_URL}/products/`);
 
   const foundProduct = items
     .map(normalizeProduct)

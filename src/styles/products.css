@@ -71,9 +71,7 @@
   line-height: 1.4;
 }
 
-.product-badge {
-  right: 18px;
-}
+.product-badge { right: 18px; }
 
 .new-badge {
   left: 18px;
@@ -140,43 +138,44 @@
 }
 
 .products-page .page-title {
-  margin-bottom: 50px;
+  margin-bottom: 36px;
 }
 
+/* Products page filters: top toolbar, not side panel */
 .catalog-layout {
-  display: grid;
-  grid-template-columns: 344px 1fr;
-  gap: 34px;
-  align-items: start;
+  display: block;
   direction: rtl;
 }
 
 .filters-panel {
-  position: sticky;
-  top: 118px;
+  position: static;
+  top: auto;
   display: grid;
-  gap: 34px;
+  grid-template-columns: minmax(260px, 330px) minmax(0, 1fr);
+  gap: 18px;
+  align-items: stretch;
+  margin-bottom: 32px;
 }
 
 .filter-box {
+  min-width: 0;
   background: #fff;
   border: 1px solid var(--line);
   border-radius: 18px;
-  padding: 28px;
+  padding: 22px;
   box-shadow: var(--shadow-card);
+  overflow: hidden;
 }
 
 .filter-box h3 {
-  margin: 0 0 20px;
-  font-size: 23px;
+  margin: 0 0 16px;
+  font-size: 22px;
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
-.filter-box h3 span {
-  color: var(--gold);
-}
+.filter-box h3 span { color: var(--gold); }
 
 .filter-box input,
 .mobile-filter-card input {
@@ -195,21 +194,35 @@
   box-shadow: 0 0 0 3px var(--pink);
 }
 
-.categories-filter div {
-  display: grid;
-  gap: 14px;
+.categories-filter div,
+.mobile-cats {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  flex-wrap: nowrap;
+  padding: 4px 2px 8px;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.categories-filter div::-webkit-scrollbar,
+.mobile-cats::-webkit-scrollbar {
+  display: none;
 }
 
 .categories-filter button,
 .mobile-cats button {
-  min-height: 58px;
+  flex: 0 0 auto;
+  min-height: 46px;
   border: 0;
-  border-radius: 13px;
-  background: #fff;
+  border-radius: 999px;
+  background: var(--light-pink);
   color: var(--gray);
   padding: 10px 18px;
-  text-align: right;
-  font-size: 20px;
+  text-align: center;
+  white-space: nowrap;
+  font-size: 17px;
   font-weight: 800;
   cursor: pointer;
   transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
@@ -217,9 +230,9 @@
 
 .categories-filter button:hover,
 .mobile-cats button:hover {
-  background: var(--light-pink);
+  background: #fff0f6;
   color: var(--text);
-  transform: translateX(-3px);
+  transform: translateY(-2px);
 }
 
 .categories-filter button.active,
@@ -232,22 +245,21 @@
   display: none;
 }
 
+.catalog-content {
+  min-width: 0;
+}
+
 @media (max-width: 1150px) {
   .products-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .catalog-layout {
-    grid-template-columns: 280px 1fr;
-    gap: 22px;
+  .filters-panel {
+    grid-template-columns: 1fr;
   }
 }
 
 @media (max-width: 900px) {
-  .catalog-layout {
-    display: block;
-  }
-
   .filters-panel {
     display: none;
   }
@@ -260,36 +272,21 @@
     padding: 16px;
     margin-bottom: 22px;
     box-shadow: var(--shadow-card);
+    overflow: hidden;
   }
 
   .mobile-cats {
-    display: flex;
-    gap: 10px;
-    overflow-x: auto;
     padding-top: 14px;
-    scrollbar-width: none;
-  }
-
-  .mobile-cats::-webkit-scrollbar {
-    display: none;
   }
 
   .mobile-cats button {
-    flex: 0 0 auto;
     min-height: 44px;
     font-size: 16px;
-    border-radius: 999px;
     padding-inline: 18px;
-    background: var(--light-pink);
   }
 
-  .product-title {
-    font-size: 1.25rem;
-  }
-
-  .product-short-desc {
-    font-size: 1rem;
-  }
+  .product-title { font-size: 1.25rem; }
+  .product-short-desc { font-size: 1rem; }
 }
 
 @media (max-width: 768px) {
@@ -311,13 +308,8 @@
 }
 
 @media (max-width: 430px) {
-  .product-image-box {
-    padding: 14px;
-  }
-
-  .product-image.is-fallback {
-    padding: 24px;
-  }
+  .product-image-box { padding: 14px; }
+  .product-image.is-fallback { padding: 24px; }
 
   .product-badge,
   .new-badge {
@@ -325,11 +317,6 @@
     font-size: 14px;
   }
 
-  .product-badge {
-    right: 14px;
-  }
-
-  .new-badge {
-    left: 14px;
-  }
+  .product-badge { right: 14px; }
+  .new-badge { left: 14px; }
 }

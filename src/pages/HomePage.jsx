@@ -76,27 +76,38 @@ function normalizeProduct(product) {
   };
 }
 
-async function fetchProducts() {
-  const response = await fetch(`${API_BASE_URL}/products/`);
+async function fetchAllPages(url) {
+  const items = [];
+  let nextUrl = url;
 
-  if (!response.ok) {
-    throw new Error('فشل تحميل المنتجات من السيرفر');
+  while (nextUrl) {
+    const response = await fetch(nextUrl);
+
+    if (!response.ok) {
+      throw new Error('فشل تحميل البيانات من السيرفر');
+    }
+
+    const data = await response.json();
+
+    if (Array.isArray(data)) {
+      items.push(...data);
+      nextUrl = null;
+    } else {
+      items.push(...(data.results || []));
+      nextUrl = data.next;
+    }
   }
 
-  const data = await response.json();
-  const items = Array.isArray(data) ? data : data.results || [];
+  return items;
+}
+
+async function fetchProducts() {
+  const items = await fetchAllPages(`${API_BASE_URL}/products/`);
   return items.map(normalizeProduct);
 }
 
 async function fetchCategories() {
-  const response = await fetch(`${API_BASE_URL}/categories/`);
-
-  if (!response.ok) {
-    throw new Error('فشل تحميل التصنيفات من السيرفر');
-  }
-
-  const data = await response.json();
-  const items = Array.isArray(data) ? data : data.results || [];
+  const items = await fetchAllPages(`${API_BASE_URL}/categories/`);
   return items.map(normalizeCategory);
 }
 
@@ -147,7 +158,7 @@ export default function HomePage() {
     };
   }, []);
 
-  const featured = apiProducts.filter((product) => product.isFeatured).slice(0, 3);
+  const featured = apiProducts.filter((product) => product.isFeatured);
   const newest = sortByNewest(apiProducts).slice(0, 3);
   const categories = sortCategories(apiCategories);
 
