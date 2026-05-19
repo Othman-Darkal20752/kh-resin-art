@@ -162,6 +162,7 @@ export default function HomePage() {
   const newest = sortByNewest(apiProducts).slice(0, 3);
   const categories = sortCategories(apiCategories);
 
+
   return (
     <>
       <section className="hero-section">
@@ -200,7 +201,7 @@ export default function HomePage() {
           <p className="empty-state">لا توجد تصنيفات ظاهرة حالياً.</p>
         )}
 
-        <div className="category-grid">
+        <div className="category-grid home-category-scroll">
           {categories.map((category) => (
             <Link
               className="category-card"
