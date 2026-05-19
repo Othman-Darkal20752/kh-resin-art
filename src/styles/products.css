@@ -320,3 +320,107 @@
   .product-badge { right: 14px; }
   .new-badge { left: 14px; }
 }
+
+/* ===== Product Skeleton Loading ===== */
+.skeleton-grid {
+  align-items: stretch;
+}
+
+.product-skeleton-card {
+  pointer-events: none;
+  background: #fff;
+  border-color: rgba(120, 78, 45, 0.08);
+  box-shadow: 0 14px 34px rgba(70, 42, 25, 0.07);
+}
+
+.product-skeleton-card:hover {
+  transform: none;
+  border-color: rgba(120, 78, 45, 0.08);
+  box-shadow: 0 14px 34px rgba(70, 42, 25, 0.07);
+}
+
+.skeleton-image {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  background: #e5e7eb;
+  border-radius: 0;
+}
+
+.skeleton-body {
+  gap: 12px;
+}
+
+.skeleton-line,
+.skeleton-button {
+  position: relative;
+  overflow: hidden;
+  background: #e5e7eb;
+}
+
+.skeleton-line {
+  border-radius: 12px;
+}
+
+.skeleton-title {
+  width: 78%;
+  height: 24px;
+  margin: 4px 0 6px auto;
+}
+
+.skeleton-text {
+  width: 100%;
+  height: 16px;
+  margin: 0 0 2px;
+}
+
+.skeleton-text-short {
+  width: 62%;
+  margin-right: auto;
+}
+
+.skeleton-actions {
+  margin-top: auto;
+}
+
+.skeleton-button {
+  width: 100%;
+  height: 48px;
+  border-radius: 14px;
+}
+
+.skeleton-shine {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.skeleton-shine::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(100%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.75),
+    transparent
+  );
+  animation: skeleton-shimmer 1.35s ease-in-out infinite;
+}
+
+@keyframes skeleton-shimmer {
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+@media (max-width: 768px) {
+  .skeleton-title {
+    height: 21px;
+  }
+
+  .skeleton-button {
+    height: 46px;
+  }
+}
+

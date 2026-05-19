@@ -5,6 +5,7 @@ import ProductCard from '../components/ProductCard';
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'https://kh-resin-art-backend.onrender.com/api').replace(/\/$/, '');
 const BACKEND_BASE_URL = API_BASE_URL.replace(/\/api$/, '');
 const FALLBACK_IMAGE = '/images/product-placeholder.svg';
+const SEARCH_DEBOUNCE_MS = 350;
 
 const ALL_CATEGORY = {
   id: 'all',
@@ -104,8 +105,23 @@ async function fetchAllPages(url) {
   return items;
 }
 
-async function fetchProducts() {
-  const items = await fetchAllPages(`${API_BASE_URL}/products/`);
+function buildProductsUrl({ categorySlug, searchTerm }) {
+  const url = new URL(`${API_BASE_URL}/products/`);
+
+  if (categorySlug && categorySlug !== ALL_CATEGORY.slug) {
+    url.searchParams.set('category', categorySlug);
+  }
+
+  const cleanSearch = searchTerm.trim();
+  if (cleanSearch) {
+    url.searchParams.set('search', cleanSearch);
+  }
+
+  return url.toString();
+}
+
+async function fetchProducts({ categorySlug, searchTerm }) {
+  const items = await fetchAllPages(buildProductsUrl({ categorySlug, searchTerm }));
   return items.map(normalizeProduct);
 }
 
@@ -114,15 +130,35 @@ async function fetchCategories() {
   return items.map(normalizeCategory);
 }
 
+function ProductSkeletonCard() {
+  return (
+    <article className="product-card product-skeleton-card" aria-hidden="true">
+      <div className="skeleton-image skeleton-shine" />
+
+      <div className="product-card-body skeleton-body">
+        <div className="skeleton-line skeleton-title skeleton-shine" />
+        <div className="skeleton-line skeleton-text skeleton-shine" />
+        <div className="skeleton-line skeleton-text skeleton-text-short skeleton-shine" />
+
+        <div className="product-actions skeleton-actions">
+          <div className="skeleton-button skeleton-shine" />
+          <div className="skeleton-button skeleton-shine" />
+        </div>
+      </div>
+    </article>
+  );
+}
+
 export default function ProductsPage() {
   const [searchParams] = useSearchParams();
   const initialCategorySlug = searchParams.get('category') || ALL_CATEGORY.slug;
 
   const [selectedCategorySlug, setSelectedCategorySlug] = useState(initialCategorySlug);
   const [query, setQuery] = useState('');
-  const [apiProducts, setApiProducts] = useState([]);
+  const [products, setProducts] = useState([]);
   const [apiCategories, setApiCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [productsLoading, setProductsLoading] = useState(true);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
@@ -132,20 +168,20 @@ export default function ProductsPage() {
   useEffect(() => {
     let isMounted = true;
 
-    Promise.all([fetchProducts(), fetchCategories()])
-      .then(([products, categories]) => {
+    setCategoriesLoading(true);
+
+    fetchCategories()
+      .then((categories) => {
         if (!isMounted) return;
-        setApiProducts(products);
         setApiCategories(categories);
-        setErrorMessage('');
       })
-      .catch((error) => {
+      .catch(() => {
         if (!isMounted) return;
-        setErrorMessage(error.message || 'حدث خطأ أثناء تحميل المنتجات');
+        setApiCategories([]);
       })
       .finally(() => {
         if (!isMounted) return;
-        setLoading(false);
+        setCategoriesLoading(false);
       });
 
     return () => {
@@ -153,27 +189,44 @@ export default function ProductsPage() {
     };
   }, []);
 
+  useEffect(() => {
+    let isMounted = true;
+
+    setProductsLoading(true);
+    setErrorMessage('');
+
+    const delay = query.trim() ? SEARCH_DEBOUNCE_MS : 0;
+
+    const timer = window.setTimeout(() => {
+      fetchProducts({
+        categorySlug: selectedCategorySlug,
+        searchTerm: query,
+      })
+        .then((nextProducts) => {
+          if (!isMounted) return;
+          setProducts(nextProducts);
+          setErrorMessage('');
+        })
+        .catch((error) => {
+          if (!isMounted) return;
+          setProducts([]);
+          setErrorMessage(error.message || 'حدث خطأ أثناء تحميل المنتجات');
+        })
+        .finally(() => {
+          if (!isMounted) return;
+          setProductsLoading(false);
+        });
+    }, delay);
+
+    return () => {
+      isMounted = false;
+      window.clearTimeout(timer);
+    };
+  }, [selectedCategorySlug, query]);
+
   const categories = useMemo(() => {
     return [ALL_CATEGORY, ...apiCategories];
   }, [apiCategories]);
-
-  const filteredProducts = useMemo(() => {
-    const value = query.trim();
-
-    return apiProducts.filter((product) => {
-      const matchesCategory =
-        selectedCategorySlug === ALL_CATEGORY.slug ||
-        product.categorySlug === selectedCategorySlug;
-
-      const matchesSearch =
-        !value ||
-        product.name.includes(value) ||
-        product.shortDescription.includes(value) ||
-        product.category.includes(value);
-
-      return matchesCategory && matchesSearch;
-    });
-  }, [apiProducts, selectedCategorySlug, query]);
 
   return (
     <section className="products-page page-section">
@@ -203,6 +256,7 @@ export default function ProductsPage() {
                   className={selectedCategorySlug === item.slug ? 'active' : ''}
                   onClick={() => setSelectedCategorySlug(item.slug)}
                   type="button"
+                  disabled={categoriesLoading && item.slug !== ALL_CATEGORY.slug}
                 >
                   {item.name}
                 </button>
@@ -217,6 +271,7 @@ export default function ProductsPage() {
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder="ابحثي عن منتج..."
+              aria-label="البحث عن منتج"
             />
 
             <div className="mobile-cats">
@@ -226,6 +281,7 @@ export default function ProductsPage() {
                   className={selectedCategorySlug === item.slug ? 'active' : ''}
                   onClick={() => setSelectedCategorySlug(item.slug)}
                   type="button"
+                  disabled={categoriesLoading && item.slug !== ALL_CATEGORY.slug}
                 >
                   {item.name}
                 </button>
@@ -233,16 +289,23 @@ export default function ProductsPage() {
             </div>
           </div>
 
-          {loading && <p className="empty-state">جاري تحميل المنتجات...</p>}
-          {!loading && errorMessage && <p className="empty-state">{errorMessage}</p>}
+          {productsLoading && (
+            <div className="products-grid catalog-grid skeleton-grid" aria-label="جاري تحميل المنتجات">
+              {Array.from({ length: 6 }).map((_, index) => (
+                <ProductSkeletonCard key={`product-skeleton-${index}`} />
+              ))}
+            </div>
+          )}
 
-          {!loading && !errorMessage && (
+          {!productsLoading && errorMessage && <p className="empty-state">{errorMessage}</p>}
+
+          {!productsLoading && !errorMessage && (
             <>
               <div className="products-grid catalog-grid">
-                {filteredProducts.map((product) => <ProductCard key={product.id} product={product} />)}
+                {products.map((product) => <ProductCard key={product.id} product={product} />)}
               </div>
 
-              {!filteredProducts.length && (
+              {!products.length && (
                 <p className="empty-state">لا توجد منتجات مطابقة أو لم يتم إضافة منتجات بعد.</p>
               )}
             </>
